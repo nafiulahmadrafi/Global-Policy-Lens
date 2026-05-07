@@ -40,7 +40,7 @@ Your job:
 
 Be thorough — do not skip minor sections. Each section should be self-contained enough for independent analysis.
 
-Return valid JSON only.`,
+Return valid JSON only — no markdown, no backticks.`,
       },
     ],
     config: {
@@ -78,34 +78,58 @@ export async function researchSection(
   country: string,
   policyArea?: string
 ): Promise<ComparativeAnalysis> {
-  const response = await ai.models.generateContent({
+  // ── Step 1: Google Search দিয়ে raw research (JSON schema ছাড়া) ──
+  const searchResponse = await ai.models.generateContent({
     model: "gemini-2.5-flash",
     contents: [
       {
-        text: `You are a policy research specialist with access to Google Search. Research this policy section thoroughly.
+        text: `You are a policy research specialist. Research this policy section.
 
 COUNTRY: ${country}
 POLICY AREA: ${policyArea ?? "General Policy"}
 SECTION TITLE: ${sectionTitle}
 SECTION CONTENT: ${sectionContent}
 
-Using Google Search, find and return:
+Using Google Search, find:
+1. Specific existing laws or acts in ${country} that govern this topic (name them precisely).
+2. Specific international frameworks that apply (name articles/clauses).
+3. How 3 countries handle this policy area — pick similar income-level countries AND top performers.
+4. Critical gaps vs international best practice.
+5. Source URLs used.
 
-1. RELATED DOMESTIC LAWS: Specific existing laws, acts, or regulations in ${country} that govern or overlap with this section topic. Name them precisely (e.g., "Labour Act 2006, Section 14").
-
-2. INTERNATIONAL STANDARDS: Specific international frameworks that apply (e.g., ILO Convention No. 87, UN SDG Goal 8, WHO Framework Convention). Name specific articles or clauses where possible.
-
-3. GLOBAL COMPARISONS: How 3 countries handle this specific policy area — pick countries that are both similar to ${country} (same income level or region) AND top-performers globally. Include a brief performance note.
-
-4. POLICY GAPS: Based on research, what critical elements are missing from this section compared to international best practice?
-
-5. SOURCES: URLs of sources used.
-
-Return valid JSON only.`,
+Write your findings clearly and structured.`,
       },
     ],
     config: {
       tools: [{ googleSearch: {} }],
+    },
+  });
+
+  const rawResearch = searchResponse.text || "";
+
+  // ── Step 2: Structure the research into JSON (schema enforce করা) ──
+  const structureResponse = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: [
+      {
+        text: `Convert this research into structured JSON. Return valid JSON only — no markdown, no backticks.
+
+RESEARCH TEXT:
+${rawResearch}
+
+Required JSON structure:
+{
+  "relatedLaws": "specific laws in the country",
+  "internationalStandards": "specific international frameworks",
+  "globalComparisons": [
+    { "country": "name", "description": "how they handle it", "score": "optional rating" }
+  ],
+  "policyGaps": "what is missing vs international best practice",
+  "sources": ["url1", "url2"]
+}`,
+      },
+    ],
+    config: {
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
@@ -132,7 +156,7 @@ Return valid JSON only.`,
     },
   });
 
-  const jsonStr = response.text || "{}";
+  const jsonStr = structureResponse.text || "{}";
   return JSON.parse(jsonStr) as ComparativeAnalysis;
 }
 
