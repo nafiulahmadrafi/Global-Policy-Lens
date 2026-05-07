@@ -1,0 +1,25 @@
+{
+  "name": "PolicyLens AI",
+  "short_name": "PolicyLens",
+  "description": "AI-powered policy impact analysis using Gemini + Claude. Section-wise scoring with real country data.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0f172a",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["productivity", "education", "government"],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

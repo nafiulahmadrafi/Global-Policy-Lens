@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Allow: /methodology
+Allow: /feed
+
+Disallow: /api/
+Disallow: /dashboard
+
+Sitemap: https://policylens.ai/sitemap.xml

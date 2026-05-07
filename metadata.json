@@ -1,0 +1,6 @@
+{
+  "name": "Policy Analyzer UI",
+  "description": "A minimal interface for uploading policy documents and selecting target countries for analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": []
+}
